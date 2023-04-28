@@ -18,7 +18,7 @@ datatype = "CIFAR10"
 
 # choose hyperparameters
 num_of_epochs = 20
-global_learning_rate = 0.01
+global_learning_rate = 0.001
 global_batch_size = 50
 
 # choose image size
