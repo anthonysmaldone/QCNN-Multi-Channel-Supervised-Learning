@@ -33,17 +33,17 @@ import models
 # list containing train size, image size x, image size y, learning_rate, batch size, test size, dataset, number of epochs
 details = [datasize(datatype)[0],resize_x,resize_y,global_learning_rate,global_batch_size,datasize(datatype)[1],datatype,num_of_epochs]
 
-# set model to True to run
+# set model to True to run sequentially
 ############################
-DR_U1_QCNN = False 
-DRR_U1_QCNN = False 
-MW_U1_QCNN = False 
-control_U1_QCNN = False 
+DR_U1_QCNN = True 
+DRR_U1_QCNN = True 
+MW_U1_QCNN = True 
+control_U1_QCNN = True 
 
 DR_U2_QCNN = True
-DRR_U2_QCNN = False 
-MW_U2_QCNN = False
-control_U2_QCNN = False
+DRR_U2_QCNN = True 
+MW_U2_QCNN = True
+control_U2_QCNN = True
 #############################
 models_to_train = []
 
