@@ -12,14 +12,13 @@ from utils import normalize_tensor_by_index
 class U1_circuit(tf.keras.layers.Layer):
 
     # initialize class
-    def __init__(self, n_kernels, n_input_channels, datatype, registers=1, rdpa=1, classical_weights=False, inter_U=False, activation=None, name=None, kernel_regularizer=None, **kwargs):
+    def __init__(self, n_kernels, n_input_channels, datatype, registers=1, rdpa=1, inter_U=False, activation=None, name=None, kernel_regularizer=None, **kwargs):
         super(U1_circuit, self).__init__(name=name, **kwargs)
         self.n_kernels = n_kernels
         self.n_input_channels = n_input_channels
         self.registers = registers
         self.rdpa = rdpa
         self.ancilla = int(registers/rdpa)
-        self.classical_weights = classical_weights
         self.datatype = datatype
         self.inter_U = inter_U
         self.learning_params = []
@@ -240,12 +239,6 @@ class U1_circuit(tf.keras.layers.Layer):
                                       initializer=tf.keras.initializers.glorot_normal(seed=42),
                                       regularizer=self.kernel_regularizer)
 
-        if self.classical_weights:
-          self.classical_w = self.add_weight(name="classical_weights",
-                                             shape=[self.num_x, self.num_y],
-                                             initializer=tf.keras.initializers.RandomNormal(mean=1.0,stddev=0.05,seed=42),
-                                             regularizer=self.kernel_regularizer)
-
         # create circuit tensor containing values for each convolution step
         # kernel will step num_x*num_y times
         self.circuit_tensor = tfq.convert_to_tensor([self.circuit] * self.num_x * self.num_y)
@@ -268,8 +261,6 @@ class U1_circuit(tf.keras.layers.Layer):
         # reshape tensor of expectation values to
         # shape [batch_size, n_horizontal_strides, n_vertical_strides,n_input_channels] and return
         output = tf.reshape(output, shape=[-1, self.num_x, self.num_y])
-        if self.classical_weights:
-          output = tf.math.multiply(output,self.classical_w)
         return output
     # define keras backend function to stride kernel and collect data
     def call(self, inputs):
@@ -341,7 +332,7 @@ class U1_circuit(tf.keras.layers.Layer):
 class U2_circuit(tf.keras.layers.Layer):
 
     # initialize class
-    def __init__(self, n_kernels, n_input_channels, datatype, registers=1, rdpa=1, classical_weights=False, inter_U=False, activation=None, name=None, kernel_regularizer=None, **kwargs):
+    def __init__(self, n_kernels, n_input_channels, datatype, registers=1, rdpa=1, inter_U=False, activation=None, name=None, kernel_regularizer=None, **kwargs):
         super(U2_circuit, self).__init__(name=name, **kwargs)
         self.n_kernels = n_kernels
         self.n_input_channels = n_input_channels
@@ -349,7 +340,6 @@ class U2_circuit(tf.keras.layers.Layer):
         #register depositions per ancilla
         self.rdpa = rdpa
         self.ancilla = int(registers/rdpa)
-        self.classical_weights = classical_weights
         self.inter_U = inter_U
         self.learning_params = []
         self.Q_circuit()
@@ -545,12 +535,6 @@ class U2_circuit(tf.keras.layers.Layer):
                                       initializer=tf.keras.initializers.glorot_normal(seed=42),
                                       regularizer=self.kernel_regularizer)
         
-        if self.classical_weights:
-          self.classical_w = self.add_weight(name="classical_weights", 
-                                             shape=[self.num_x, self.num_y],
-                                             initializer=tf.keras.initializers.RandomNormal(mean=1.0,stddev=0.05,seed=42),
-                                             regularizer=self.kernel_regularizer)
-
         # create circuit tensor containing values for each convolution step
         # kernel will step num_x*num_y times
         self.circuit_tensor = tfq.convert_to_tensor([self.circuit] * self.num_x * self.num_y)
@@ -573,8 +557,6 @@ class U2_circuit(tf.keras.layers.Layer):
         # reshape tensor of expectation values to
         # shape [batch_size, n_horizontal_strides, n_vertical_strides,n_input_channels] and return
         output = tf.reshape(output, shape=[-1, self.num_x, self.num_y])
-        if self.classical_weights:
-          output = tf.math.multiply(output,self.classical_w)
         return output
 
     # define keras backend function to stride kernel and collect data
