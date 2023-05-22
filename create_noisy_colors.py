@@ -12,6 +12,7 @@ for path in paths:
 # get file names only
     colors = [ f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
     print(colors)
+    os.mkdir(path+"noisy_colors/")
     for i in range(len(colors)):
 
 # create the one hot encoded folders
