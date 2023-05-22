@@ -1,1 +1,1 @@
-# Higher-Channel-Dimensions-in-Quantum-Convolutional-Neural-Networks
+# Quantum Convolutional Neural Networks for Multi-Channel Supervised Learning
