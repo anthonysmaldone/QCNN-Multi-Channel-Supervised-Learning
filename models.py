@@ -6,20 +6,21 @@ from circuits import U1_circuit, Q_U1_control, U2_circuit, Q_U2_control
 
 ###########################
 # build quantum convolutional neural network
-def DR_U1_QCNN_model(datatype,classes):
+def CO_U1_QCNN_model(datatype,classes):
 # conditionally set input layer and quantum layer depending on the dataset
+
 
     if datatype == "CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
 
         x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=12,activation='relu', datatype=datatype,
-                      name='DR_U1_QCNN')(x_input)
+                      name='CO_U1_QCNN')(x_input)
 
     if datatype == "COLORS" or datatype == "CIFAR10" or datatype == "COLORS_SHAPE":
         x_input = tf.keras.layers.Input((10,10,3), name = 'input')
 
         x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=3,activation='relu',datatype=datatype,
-                      name='DR_U1_QCNN')(x_input)
+                      name='CO_U1_QCNN')(x_input)
 
     x_flatten = tf.keras.layers.Flatten()(x_qconv1)
 
@@ -34,19 +35,19 @@ def DR_U1_QCNN_model(datatype,classes):
     else:
         x_fc2 = tf.keras.layers.Dense(classes, activation='softmax')(x_fc1)
 
-    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'DR_U1_QCNN')
+    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'CO_U1_QCNN')
 ###########################
-def DRPC_U1_QCNN_model(datatype,classes,rdpa):
-    
+def PCO_U1_QCNN_model(datatype,classes,rdpa):
+
     if datatype == "CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
 
-        x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=12,registers=3, rdpa=rdpa, inter_U=True, activation=tf.keras.layers.Activation('relu'),datatype=datatype, name='DRPC_U1_QCNN')(x_input)
+        x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=12,registers=3, rdpa=rdpa, inter_U=True, activation=tf.keras.layers.Activation('relu'),datatype=datatype, name='PCO_U1_QCNN')(x_input)
 
     if datatype == "COLORS" or datatype == "CIFAR10" or datatype == "COLORS_SHAPE":
         x_input = tf.keras.layers.Input((10,10,3), name = 'input')
 
-        x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=3,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype, name='DRPC_U1_QCNN')(x_input)
+        x_qconv1 = U1_circuit(n_kernels=3, n_input_channels=3,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype, name='PCO_U1_QCNN')(x_input)
 
     x_flatten = tf.keras.layers.Flatten()(x_qconv1)
 
@@ -62,7 +63,7 @@ def DRPC_U1_QCNN_model(datatype,classes,rdpa):
     else:
         x_fc2 = tf.keras.layers.Dense(classes, activation='softmax')(x_fc1)
 
-    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'DRPC_U1_QCNN')
+    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'PCO_U1_QCNN')
 ############################
 def QCNN_U1_control_model(datatype,classes):
 
@@ -116,19 +117,19 @@ def QCNN_U1_weighted_control_model(datatype,classes):
 
     return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'WEV_U1_QCNN')
 ###########################
-def DR_U2_QCNN_model(datatype,classes):
-    
+def CO_U2_QCNN_model(datatype,classes):
+
     if datatype == "CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
 
         x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=12,activation=tf.keras.layers.Activation('relu'),datatype=datatype,
-                      name='DR_U2_QCNN')(x_input)
+                      name='CO_U2_QCNN')(x_input)
 
     if datatype == "COLORS" or datatype == "CIFAR10" or datatype == "COLORS_SHAPE":
         x_input = tf.keras.layers.Input((10,10,3), name = 'input')
 
         x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=3,activation=tf.keras.layers.Activation('relu'),datatype=datatype,
-                      name='DR_U2_QCNN')(x_input)
+                      name='CO_U2_QCNN')(x_input)
 
     x_flatten = tf.keras.layers.Flatten()(x_qconv1)
 
@@ -143,19 +144,19 @@ def DR_U2_QCNN_model(datatype,classes):
     else:
         x_fc2 = tf.keras.layers.Dense(classes, activation='softmax')(x_fc1)
 
-    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'DR_U2_QCNN')
+    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'CO_U2_QCNN')
 ###########################
-def DRPC_U2_QCNN_model(datatype,classes,rdpa):
+def PCO_U2_QCNN_model(datatype,classes,rdpa):
 
     if datatype == "CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
 
-        x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=12,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype,name='DRPC_U2_QCNN')(x_input)
+        x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=12,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype,name='PCO_U2_QCNN')(x_input)
 
     if datatype == "COLORS" or datatype == "CIFAR10" or datatype == "COLORS_SHAPE":
         x_input = tf.keras.layers.Input((10,10,3), name = 'input')
 
-        x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=3,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype,name='DRPC_U2_QCNN')(x_input)
+        x_qconv1 = U2_circuit(n_kernels=3, n_input_channels=3,registers=3, rdpa=rdpa, inter_U=True,activation=tf.keras.layers.Activation('relu'),datatype=datatype,name='PCO_U2_QCNN')(x_input)
 
     x_flatten = tf.keras.layers.Flatten()(x_qconv1)
 
@@ -171,10 +172,10 @@ def DRPC_U2_QCNN_model(datatype,classes,rdpa):
     else:
         x_fc2 = tf.keras.layers.Dense(classes, activation='softmax')(x_fc1)
 
-    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'DRPC_U2_QCNN')
+    return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'PCO_U2_QCNN')
 ############################
 def QCNN_U2_control_model(datatype,classes):
-    
+
     if datatype=="CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
     
@@ -200,7 +201,7 @@ def QCNN_U2_control_model(datatype,classes):
     return tf.keras.models.Model(inputs = x_input, outputs = x_fc2, name = 'Control_U2_QCNN')
 ############################
 def QCNN_U2_weighted_control_model(datatype,classes):
-    
+
     if datatype=="CHANNELS":
         x_input = tf.keras.layers.Input((10,10,12), name = 'input')
     
