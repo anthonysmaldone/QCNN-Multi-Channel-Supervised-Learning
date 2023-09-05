@@ -40,7 +40,7 @@ if datamenu1 == 4:
 else:
     datamenu3 = 10
     
-print("Select models to run (y/n): ")
+print("Select models to run sequentially (y/n): ")
 
 model1 = input('CO-QCNN (U1): ')
 model2 = input('PCO-QCNN (U1): ')
