@@ -27,6 +27,7 @@ except:
 
 if datamenu2 == '':
     datamenu2 = 0.001
+
 if datamenu1 == 4:
     try:
         datamenu3 = int(input('Enter number of CIFAR classes (default 10): '))
@@ -40,14 +41,14 @@ else:
     
 print("Select models to run (y/n): ")
 
-model1 = input('DR-QCNN (U1): ')
-model2 = input('DRPC-QCNN (U1): ')
-model3 = input('DRPC-T-QCNN (U1): ')
+model1 = input('CO-QCNN (U1): ')
+model2 = input('PCO-QCNN (U1): ')
+model3 = input('PCO-T-QCNN (U1): ')
 model4 = input('WEV-QCNN (U1): ')
 model5 = input('Control QCNN (U1): ')
-model6 = input('DR-QCNN (U2): ')
-model7 = input('DRPC-QCNN (U2): ')
-model8 = input('DRPC-T-QCNN (U2): ')
+model6 = input('CO-QCNN (U2): ')
+model7 = input('PCO-QCNN (U2): ')
+model8 = input('PCO-T-QCNN (U2): ')
 model9 = input('WEV-QCNN (U2): ')
 model10 = input('Control QCNN (U2): ')
 
@@ -87,19 +88,19 @@ details = [datasize(datatype,classes)[0],resize_x,resize_y,global_learning_rate,
 # set model to True to run
 ############################
 if model1 == "y":
-    DR_U1_QCNN = True 
+    CO_U1_QCNN = True 
 else:
-    DR_U1_QCNN = False 
+    CO_U1_QCNN = False 
 
 if model2 == "y":
-    DRPC_U1_QCNN = True 
+    PCO_U1_QCNN = True 
 else:
-    DRPC_U1_QCNN = False 
+    PCO_U1_QCNN = False 
 
 if model3 == "y":
-    DRPC_T_U1_QCNN = True 
+    PCO_T_U1_QCNN = True 
 else:
-    DRPC_T_U1_QCNN = False 
+    PCO_T_U1_QCNN = False 
     
 if model4 == "y":
     WEV_U1_QCNN = True 
@@ -112,19 +113,19 @@ else:
     control_U1_QCNN = False 
     
 if model6 == "y":
-    DR_U2_QCNN = True 
+    CO_U2_QCNN = True 
 else:
-    DR_U2_QCNN = False 
+    CO_U2_QCNN = False 
     
 if model7 == "y":
-    DRPC_U2_QCNN = True 
+    PCO_U2_QCNN = True 
 else:
-    DRPC_U2_QCNN = False 
+    PCO_U2_QCNN = False 
     
 if model8 == "y":
-    DRPC_T_U2_QCNN = True 
+    PCO_T_U2_QCNN = True 
 else:
-    DRPC_T_U2_QCNN = False 
+    PCO_T_U2_QCNN = False 
     
 if model9 == "y":
     WEV_U2_QCNN = True 
@@ -140,14 +141,14 @@ else:
 #############################
 models_to_train = []
 #############################
-if DR_U1_QCNN:
-    models_to_train.append(models.DR_U1_QCNN_model(datatype,classes))
+if CO_U1_QCNN:
+    models_to_train.append(models.CO_U1_QCNN_model(datatype,classes))
     
-if DRPC_U1_QCNN:
-    models_to_train.append(models.DRPC_U1_QCNN_model(datatype,classes,3))    
+if PCO_U1_QCNN:
+    models_to_train.append(models.PCO_U1_QCNN_model(datatype,classes,3))    
 
-if DRPC_T_U1_QCNN:
-    models_to_train.append(models.DRPC_U1_QCNN_model(datatype,classes,1))
+if PCO_T_U1_QCNN:
+    models_to_train.append(models.PCO_U1_QCNN_model(datatype,classes,1))
 
 if WEV_U1_QCNN:
     models_to_train.append(models.QCNN_U1_weighted_control_model(datatype,classes))
@@ -155,14 +156,14 @@ if WEV_U1_QCNN:
 if control_U1_QCNN:
     models_to_train.append(models.QCNN_U1_control_model(datatype,classes))
 
-if DR_U2_QCNN:
-    models_to_train.append(models.DR_U2_QCNN_model(datatype,classes))
+if CO_U2_QCNN:
+    models_to_train.append(models.CO_U2_QCNN_model(datatype,classes))
 
-if DRPC_U2_QCNN:
-    models_to_train.append(models.DRPC_U2_QCNN_model(datatype,classes,3))
+if PCO_U2_QCNN:
+    models_to_train.append(models.PCO_U2_QCNN_model(datatype,classes,3))
     
-if DRPC_T_U2_QCNN:
-    models_to_train.append(models.DRPC_U2_QCNN_model(datatype,classes,1))
+if PCO_T_U2_QCNN:
+    models_to_train.append(models.PCO_U2_QCNN_model(datatype,classes,1))
 
 if WEV_U2_QCNN:
     models_to_train.append(models.QCNN_U2_weighted_control_model(datatype,classes))
