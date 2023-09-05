@@ -99,6 +99,10 @@ def build_model_datasets(datatype,details,num_of_classes):
         x_test = np.array(x_test)
         y_train = np.array(y_train)
         y_test = np.array(y_test)
+
+        for x in range(len(class_indicies)):
+            y_train[y_train == class_indicies[x]] = x
+            y_test[y_test == class_indicies[x]] = x
         
         print("Train Shape: "+str(np.shape(x_train)))
         print("Test Shape: "+str(np.shape(x_test)))
