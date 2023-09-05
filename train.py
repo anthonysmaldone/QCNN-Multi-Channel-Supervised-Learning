@@ -173,8 +173,7 @@ if control_U2_QCNN:
     models_to_train.append(models.QCNN_U2_control_model(datatype,classes))        
 #############################
 
-def train_model(model_to_train):
-    global classes
+def train_model(model_to_train,classes):
     model = model_to_train
 ##########################
 # print the architecture of the model
@@ -221,4 +220,4 @@ def train_model(model_to_train):
 
 # train all chosen models
 for x in models_to_train:
-    train_model(x)
+    train_model(x,classes)
