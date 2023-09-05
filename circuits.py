@@ -61,10 +61,6 @@ class U1_circuit(tf.keras.layers.Layer):
         # power of a CX gate
         def Q_new_entangle(self, source, target, qubits_tar, qubits_src):
           yield cirq.CXPowGate(exponent=self.get_new_param())(qubits_tar[target], qubits_src[source])
-        
-        # the function performs the inverse of the power of a CX gate
-        def Q_unentangle(self, source, target, qubits_tar, qubits_src, param):
-          yield cirq.CXPowGate(exponent=-1*self.learning_params[param-1])(qubits_tar[target], qubits_src[source])
 
         # angle encodes the input data
         def Q_embed(self,layer_index, register_index,qubits):
@@ -95,53 +91,11 @@ class U1_circuit(tf.keras.layers.Layer):
         # deposits quantum phase onto the ancilla
         def Q_deposit(self,qubits,ancilla):
           self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[0], qubit_registers[0][ancilla]))
+          # Uncomment for fully connectivity
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[1], qubit_registers[0][ancilla]))
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[2], qubit_registers[0][ancilla]))
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[3], qubit_registers[0][ancilla]))
 
-        # unentangles the data between all channels
-        def Q_unentangle_inter_data(self,layer_index, register_index, qubits_all):
-
-          if self.registers > 2:
-            starting_parameter = 3+4*register_index+layer_index*6*self.registers+self.registers + 1
-            count = 0
-            for i in range(len(qubits_all)-1,0,-1):
-              if i != len(qubits_all)-1:
-                self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[i+1], qubits_all[i], starting_parameter-count))
-              else:
-                self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[1], qubits_all[i], starting_parameter-count))
-              count = count + 1
-          else:
-            starting_parameter = 8+11*layer_index+1
-            self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[1], qubits_all[2], starting_parameter))
-
-        # unentangles the data with each channels
-        def Q_unentangle_intra_data(self,layer_index, register_index, qubits):
-        
-          # chooses the index of the learnable parameter so that the uncomputations is successful
-          if self.registers > 2 and self.inter_U:
-            starting_parameter = 3+4*register_index+layer_index*6*self.registers
-
-          elif self.registers > 2 and self.inter_U == False:
-            starting_parameter = 3+4*register_index+layer_index*5*self.registers
-
-          elif self.registers == 2 and self.inter_U:
-            starting_parameter = 3+4*register_index+layer_index*5*self.registers+layer_index
-
-          elif self.registers == 2 and self.inter_U == False:
-            starting_parameter = 3+4*register_index+layer_index*5*self.registers
-
-          else:
-            starting_parameter = 3+4*register_index+layer_index*5
-
-          self.circuit.append(Q_unentangle(self,0 ,3, qubits, qubits, starting_parameter+1))
-          self.circuit.append(Q_unentangle(self,3 ,2, qubits, qubits, starting_parameter))
-          self.circuit.append(Q_unentangle(self,2 ,1, qubits, qubits, starting_parameter-1))
-          self.circuit.append(Q_unentangle(self,1 ,0, qubits, qubits, starting_parameter-2))
-
-        # unencode the data from the convolved channel
-        def Q_unembed(self,layer_index,register_index,qubits):
-          starting_parameter = (2**2)*(register_index+(layer_index*self.registers))
-          for i in range(len(qubits)):
-            self.circuit.append(cirq.rx(-np.pi*input_params[starting_parameter+i])(qubits[i]))
-        
         # entangle the ancilla qubits if applicable
         def Q_ancilla_entangle(self,qubits):
           if self.ancilla > 2:
@@ -159,62 +113,30 @@ class U1_circuit(tf.keras.layers.Layer):
         for i in range(self.ancilla):
            self.circuit.append(cirq.H(qubit_registers[0][i]))
            
-
         for j in range(circuit_layers):
-          if j != circuit_layers-1:
             
-            # angle encode classical data
-            for i in range(self.registers):
-              Q_embed(self,j,i,qubit_registers[i+1])
+          # angle encode classical data
+          for i in range(self.registers):
+            Q_embed(self,j,i,qubit_registers[i+1])
 
-            # entangle data within each channel
-            for i in range(self.registers):
-              Q_entangle_intra_data(self,qubit_registers[i+1])
+          # entangle data within each channel
+          for i in range(self.registers):
+            Q_entangle_intra_data(self,qubit_registers[i+1])
 
-            # entangle data between each channel
-            if self.registers > 1 and self.inter_U:
-              Q_entangle_inter_data(self,qubit_registers)
+          # entangle data between each channel
+          if self.registers > 1 and self.inter_U:
+            Q_entangle_inter_data(self,qubit_registers)
 
-            # deposit phase from all working registers to the ancilla
-            ancilla_count = 1
-            for i in range(self.registers):
-              Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
-              if ancilla_count < self.ancilla:
-                ancilla_count = ancilla_count + 1
-            
-            # unentangle data between each channel
-            if self.registers > 1 and self.inter_U:
-              Q_unentangle_inter_data(self,j,i,qubit_registers)
+          # exchange phase from all working registers to the ancilla
+          ancilla_count = 1
+          for i in range(self.registers):
+            Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
+            if ancilla_count < self.ancilla:
+              ancilla_count = ancilla_count + 1
 
-            # unentangle data within each channel
-            for i in range(self.registers):
-              Q_unentangle_intra_data(self,j,i,qubit_registers[i+1])
-
-            # unencode channel data for convolved channel
-            for i in range(self.registers):
-              Q_unembed(self,j,i,qubit_registers[i+1])
-          
-          
-          # for the last quantum layer, its not necessary to uncompute
-          else:
-            for i in range(self.registers):
-              Q_embed(self,j,i,qubit_registers[i+1])
-
-            for i in range(self.registers):
-              Q_entangle_intra_data(self,qubit_registers[i+1])
-
-            if self.registers > 1 and self.inter_U:
-              Q_entangle_inter_data(self,qubit_registers)
-
-            ancilla_count = 1
-            for i in range(self.registers):
-              Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
-              if ancilla_count < self.ancilla:
-                ancilla_count = ancilla_count + 1
-
-        # entangle the ancilla qubits
-        if self.registers > 1 and self.ancilla > 1:
-          Q_ancilla_entangle(self,qubit_registers[0])
+          # entangle the ancilla qubits
+          if self.registers > 1 and self.ancilla > 1:
+            Q_ancilla_entangle(self,qubit_registers[0])
         
         print("Circuit Depth: "+str(len(cirq.Circuit(self.circuit.all_operations()))))
 
@@ -384,11 +306,6 @@ class U2_circuit(tf.keras.layers.Layer):
             yield cirq.CZPowGate(exponent=self.get_new_param())(qubits_tar[target], qubits_src[source])
           yield cirq.CXPowGate(exponent=self.get_new_param())(qubits_tar[target], qubits_src[source])
 
-        def Q_unentangle(self, source, target, qubits_tar, qubits_src, param, CZ=True):
-          yield cirq.CXPowGate(exponent=-1*self.learning_params[param])(qubits_tar[target], qubits_src[source])
-          if CZ:
-            yield cirq.CZPowGate(exponent=-1*self.learning_params[param-1])(qubits_tar[target], qubits_src[source])
-
         def Q_embed(self,layer_index, register_index,qubits):
           starting_parameter = (2**2)*(register_index+(layer_index*self.registers))
           for i in range(len(qubits)):
@@ -411,47 +328,11 @@ class U2_circuit(tf.keras.layers.Layer):
 
         def Q_deposit(self,qubits,ancilla):
           self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[0], qubit_registers[0][ancilla]))
-          #self.circuit.append(cirq.ry(np.pi*self.get_new_param())(qubit_registers[0][ancilla]))
+          # Uncomment for full connectivity
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[1], qubit_registers[0][ancilla]))
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[2], qubit_registers[0][ancilla]))
+          #self.circuit.append(cirq.CZPowGate(exponent=self.get_new_param())(qubits[3], qubit_registers[0][ancilla]))
 
-        def Q_unentangle_inter_data(self,layer_index, register_index, qubits_all):
-          if self.registers > 2:
-            starting_parameter = 5+6*register_index+layer_index*8*self.registers+self.registers
-
-            count = 0
-            for i in range(len(qubits_all)-1,0,-1):
-              if i != len(qubits_all)-1:
-                self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[i+1], qubits_all[i], starting_parameter-count, CZ=False))
-              else:
-                self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[1], qubits_all[i], starting_parameter-count, CZ=False))
-              count = count + 1
-          else:
-            starting_parameter = 12+layer_index*15
-            self.circuit.append(Q_unentangle(self, 0 ,0, qubits_all[1], qubits_all[2], starting_parameter, CZ=False))
-        
-        def Q_unentangle_intra_data(self,layer_index, register_index, qubits):
-          if self.registers > 2 and self.inter_U:
-            starting_parameter = 5+6*register_index+layer_index*8*self.registers
-          
-          elif self.registers > 2 and self.inter_U == False:
-            starting_parameter = 5+6*register_index+layer_index*7*self.registers
-                   
-          elif self.registers == 2 and self.inter_U:
-            starting_parameter = 5+6*register_index+layer_index*7*self.registers + layer_index
-          
-          elif self.registers == 2 and self.inter_U == False:
-            starting_parameter = 5+6*register_index+layer_index*7*self.registers
-          
-          else:
-            starting_parameter = 5+6*register_index+layer_index*7
-          
-          self.circuit.append(Q_unentangle(self,2 ,0, qubits, qubits, starting_parameter))
-          self.circuit.append(Q_unentangle(self,3 ,2, qubits, qubits, starting_parameter-2))
-          self.circuit.append(Q_unentangle(self,1 ,0, qubits, qubits, starting_parameter-4))
-
-        def Q_unembed(self,layer_index,register_index,qubits):
-          starting_parameter = (2**2)*(register_index+(layer_index*self.registers))
-          for i in range(len(qubits)):
-            self.circuit.append(cirq.rx(-np.pi*input_params[starting_parameter+i])(qubits[i]))
         
         def Q_ancilla_entangle(self,qubits):
           if self.ancilla > 2:
@@ -466,48 +347,25 @@ class U2_circuit(tf.keras.layers.Layer):
         for i in range(self.ancilla):
            self.circuit.append(cirq.H(qubit_registers[0][i]))
 
+        
         for j in range(circuit_layers):
-          if j != circuit_layers-1:
-            for i in range(self.registers):
-              Q_embed(self,j,i,qubit_registers[i+1])
-            
-            for i in range(self.registers):
-              Q_entangle_intra_data(self,qubit_registers[i+1])
-            
-            if self.registers > 1 and self.inter_U:
-              Q_entangle_inter_data(self,qubit_registers)
-            
-            
-            ancilla_count = 1
-            for i in range(self.registers):
-              Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
-              if ancilla_count < self.ancilla:
-                ancilla_count = ancilla_count + 1
-            
-            if self.registers > 1 and self.inter_U:
-              Q_unentangle_inter_data(self,j,i,qubit_registers)
-            
-            for i in range(self.registers):
-              Q_unentangle_intra_data(self,j,i,qubit_registers[i+1])
-            
-            for i in range(self.registers):
-              Q_unembed(self,j,i,qubit_registers[i+1])
-          
-          else:
-            for i in range(self.registers):
-              Q_embed(self,j,i,qubit_registers[i+1])
-            
-            for i in range(self.registers):
-              Q_entangle_intra_data(self,qubit_registers[i+1])
-            
-            if self.registers > 1 and self.inter_U:
-              Q_entangle_inter_data(self,qubit_registers)
-            
-            ancilla_count = 1
-            for i in range(self.registers):
-              Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
-              if ancilla_count < self.ancilla:
-                ancilla_count = ancilla_count + 1
+
+          for i in range(self.registers):
+            Q_embed(self,j,i,qubit_registers[i+1])
+        
+          for i in range(self.registers):
+            Q_entangle_intra_data(self,qubit_registers[i+1])
+        
+          if self.registers > 1 and self.inter_U:
+            Q_entangle_inter_data(self,qubit_registers)
+        
+        
+          ancilla_count = 1
+          for i in range(self.registers):
+            Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
+            if ancilla_count < self.ancilla:
+            ancilla_count = ancilla_count + 1
+
             
         if self.registers > 1 and self.ancilla > 1:
           Q_ancilla_entangle(self,qubit_registers[0])
@@ -626,6 +484,7 @@ class U2_circuit(tf.keras.layers.Layer):
         
 #######################
 class Q_U1_control(tf.keras.layers.Layer):
+    # Inspired by https://github.com/Menborong/Simple-QCNN
 
     # initialize class
     def __init__(self, n_kernels, datatype, padding=False, classical_weights=False, activation=None, name=None, kernel_regularizer=None, **kwargs):
