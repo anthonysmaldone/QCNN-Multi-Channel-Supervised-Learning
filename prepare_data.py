@@ -2,8 +2,7 @@
 import tensorflow as tf
 from sklearn.utils import shuffle
 import numpy as np
-
-#num_of_classes = 2
+from tqdm import tqdm
 
 def datasize(datatype,num_of_classes):
     #Train/test split is 5:1 for CIFAR-10 and 4:1 for colors
@@ -74,10 +73,6 @@ def build_model_datasets(datatype,details,num_of_classes):
         full_x_test = full_x_test[np.isin(full_y_test, class_indicies).flatten()]
         full_y_test = full_y_test[np.isin(full_y_test, class_indicies).flatten()]
         
-        # convert to one hot encoded labels
-        for x in range(len(class_indicies)):
-            full_y_train[full_y_train == class_indicies[x]] = x
-            full_y_test[full_y_test == class_indicies[x]] = x
         
         # ensure the same number of pictures of each class are in the training/test set
         train_images_per_class = datasize(datatype,num_of_classes)[0]//len(classes)
@@ -90,12 +85,12 @@ def build_model_datasets(datatype,details,num_of_classes):
         y_train = []
         y_test = []
         
-        for i in range(len(full_y_train)):
+        for i in tqdm(range(len(full_y_train)),desc='Filtering Training Images'):
             if y_train.count(full_y_train[i]) < train_images_per_class:
                 x_train.append(full_x_train[i])
                 y_train.append(full_y_train[i])
         
-        for i in range(len(full_y_test)):
+        for i in tqdm(range(len(full_y_test)),desc='Filtering Testing Images'):
             if y_test.count(full_y_test[i]) < test_images_per_class:
                 x_test.append(full_x_test[i])
                 y_test.append(full_y_test[i])
