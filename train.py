@@ -15,6 +15,7 @@ print("1: COLORS")
 print("2: COLORS_SHAPE")
 print("3: 12-CHANNELS")
 print("4: CIFAR-10")
+print("Note: Run create_noisy_colors.py if first time running software")
 try:
     datamenu1 = int(input('Choose dataset to train on (enter number): '))
 except:
