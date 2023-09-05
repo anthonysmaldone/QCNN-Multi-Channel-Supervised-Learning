@@ -364,7 +364,7 @@ class U2_circuit(tf.keras.layers.Layer):
           for i in range(self.registers):
             Q_deposit(self,qubit_registers[i+1],ancilla_count-1)
             if ancilla_count < self.ancilla:
-            ancilla_count = ancilla_count + 1
+                ancilla_count = ancilla_count + 1
 
             
         if self.registers > 1 and self.ancilla > 1:
